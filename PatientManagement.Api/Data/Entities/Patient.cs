@@ -5,7 +5,19 @@ public sealed class Patient
     public const int FullNameMaximumLength = 200;
 
     public Patient(Guid id, Guid tenantId, string fullName, DateOnly dateOfBirth)
+        : this(id, tenantId, fullName, dateOfBirth, TimeProvider.System)
     {
+    }
+
+    public Patient(
+        Guid id,
+        Guid tenantId,
+        string fullName,
+        DateOnly dateOfBirth,
+        TimeProvider timeProvider)
+    {
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         if (id == Guid.Empty)
         {
             throw new ArgumentException("Patient ID cannot be empty.", nameof(id));
@@ -25,7 +37,9 @@ public sealed class Patient
                 nameof(fullName));
         }
 
-        if (dateOfBirth > DateOnly.FromDateTime(DateTime.UtcNow))
+        var currentUtcDate = DateOnly.FromDateTime(timeProvider.GetUtcNow().UtcDateTime);
+
+        if (dateOfBirth > currentUtcDate)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(dateOfBirth),

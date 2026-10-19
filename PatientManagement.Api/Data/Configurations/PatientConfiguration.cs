@@ -8,11 +8,20 @@ public sealed class PatientConfiguration : IEntityTypeConfiguration<Patient>
 {
     public void Configure(EntityTypeBuilder<Patient> builder)
     {
-        builder.ToTable(
-            "patients",
-            tableBuilder => tableBuilder.HasCheckConstraint(
-                "ck_patients_date_of_birth_not_future",
-                "date_of_birth <= CURRENT_DATE"));
+        builder.ToTable("patients", tableBuilder =>
+        {
+            tableBuilder.HasCheckConstraint(
+                "ck_patients_patient_id_not_empty",
+                "patient_id <> '00000000-0000-0000-0000-000000000000'");
+
+            tableBuilder.HasCheckConstraint(
+                "ck_patients_tenant_id_not_empty",
+                "tenant_id <> '00000000-0000-0000-0000-000000000000'");
+
+            tableBuilder.HasCheckConstraint(
+                "ck_patients_full_name_not_blank",
+                "length(trim(full_name)) > 0");
+        });
 
         builder.HasKey(patient => patient.Id)
             .HasName("pk_patients");
