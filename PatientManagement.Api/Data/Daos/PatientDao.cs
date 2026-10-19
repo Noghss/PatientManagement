@@ -33,7 +33,7 @@ public sealed class PatientDao(AppDbContext dbContext) : IPatientDao
         if (afterPatientId.HasValue)
         {
             query = query.Where(
-                patient => patient.Id.CompareTo(afterPatientId.Value) > 0);
+                patient => patient.Id > afterPatientId.Value);
         }
 
         var patients = await query
