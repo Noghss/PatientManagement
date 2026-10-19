@@ -8,4 +8,10 @@ public interface IPatientDao
         Guid tenantId,
         Guid patientId,
         CancellationToken cancellationToken);
+
+    Task<PatientPage> GetPatientsByTenantAsync(
+        Guid tenantId,
+        Guid? afterPatientId,
+        int pageSize,
+        CancellationToken cancellationToken);
 }

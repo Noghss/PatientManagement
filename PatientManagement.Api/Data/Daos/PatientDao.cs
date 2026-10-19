@@ -16,4 +16,42 @@ public sealed class PatientDao(AppDbContext dbContext) : IPatientDao
                 patient => patient.TenantId == tenantId && patient.Id == patientId,
                 cancellationToken);
     }
+
+    public async Task<PatientPage> GetPatientsByTenantAsync(
+        Guid tenantId,
+        Guid? afterPatientId,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(pageSize, 100);
+
+        var query = dbContext.Patients
+            .AsNoTracking()
+            .Where(patient => patient.TenantId == tenantId);
+
+        if (afterPatientId.HasValue)
+        {
+            query = query.Where(
+                patient => patient.Id.CompareTo(afterPatientId.Value) > 0);
+        }
+
+        var patients = await query
+            .OrderBy(patient => patient.Id)
+            .Take(pageSize + 1)
+            .ToListAsync(cancellationToken);
+
+        var hasNextPage = patients.Count > pageSize;
+
+        if (hasNextPage)
+        {
+            patients.RemoveAt(pageSize);
+        }
+
+        var nextCursor = hasNextPage
+            ? patients[^1].Id
+            : (Guid?)null;
+
+        return new PatientPage(patients, nextCursor);
+    }
 }
